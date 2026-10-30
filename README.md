@@ -2,9 +2,9 @@
 
 **Different minds. One word.**
 
-A cooperative real-time word game for 2–4 friends. Everyone sees the same starting word and
-secretly types one word it brings to mind. The words are revealed together; then everyone tries
-again, aiming for the word they think the others will pick. You win when every player submits the
+A cooperative real-time word game for 2–4 friends. There's no given word to start from: everyone
+secretly types any word they like. The words are revealed together; then everyone tries again,
+aiming for the word they think the others will pick. You win when every player submits the
 exact same word in the same round.
 
 - Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Motion for React
@@ -63,8 +63,7 @@ operations on one room are serialized. That makes "store each answer once", "rev
 victory once", "create the next round once", "never exceed four players" and "one active match"
 straightforward, and they are backed by constraints and triggers too (unique `(round_id,
 player_id)`, partial unique index on active matches, capacity trigger, a trigger that refuses to
-mark a match won unless every participant's answer matches, an immutable participant roster and
-starting word). The concurrency tests fire real parallel transactions; removing the lock makes them
+mark a match won unless every participant's answer matches, and an immutable participant roster). The concurrency tests fire real parallel transactions; removing the lock makes them
 fail.
 
 **Answer secrecy.** Unrevealed answers are only ever read by the server, and only to tell a player
@@ -116,8 +115,8 @@ can be muted (persisted locally). `prefers-reduced-motion` is honored throughout
 
 ## Local development
 
-`npm run dev:local` starts an embedded PostgreSQL (data in `.data/postgres`), applies migrations, seeds the
-starting words and runs `next dev` on http://localhost:3000. Realtime runs over Server-Sent Events.
+`npm run dev:local` starts an embedded PostgreSQL (data in `.data/postgres`), applies migrations and runs
+`next dev` on http://localhost:3000. Realtime runs over Server-Sent Events.
 
 To play with yourself, open the room link in a second browser profile or a private window (each
 needs its own cookies). To try it on your phone over your LAN, run
@@ -147,10 +146,10 @@ npm test
 
 Vitest boots a throwaway embedded Postgres, applies the migrations and runs:
 
-- `tests/unit` — normalization, room codes, starting words, phase derivation, agreement grouping
+- `tests/unit` — normalization, room codes, phase derivation, agreement grouping and reveal copy
 - `tests/db/rooms` — create/join, 4-player cap, invalid codes, duplicate nicknames, host-only
   start, one-player start refused, host transfer (leave and disconnect), kicking, session scoping
-- `tests/db/rounds` — same starting word, secrecy, single submission, reveal timing, next round
+- `tests/db/rounds` — round one with no given word, secrecy, single submission, reveal timing, next round
   contents, partial vs full agreement, repeated words, stale rounds, server-side validation,
   ending, restart, the win-guard trigger
 - `tests/db/concurrency` — simultaneous final answers, simultaneous identical answers, duplicate
@@ -165,7 +164,7 @@ npm run test:e2e
 Playwright builds the app into `.next-e2e`, starts it against a fresh embedded Postgres, and runs:
 
 - `multiplayer.spec.ts` — the full acceptance scenario in three isolated browser contexts (create,
-  join by link, join by code, same starting word, BEACH stays secret on screen / in the state and
+  join by link, join by code, everyone opens round one with their own word, BEACH stays secret on screen / in the state and
   history APIs / in every response Jamie's browser received, simultaneous reveal, round 2, all
   converge on SEA, identical victory everywhere, play again)
 - `ui.spec.ts` — 320 px layouts with 24-letter words and no horizontal overflow, 44 px targets,
@@ -195,14 +194,13 @@ npm run check
    `unison:room:<room uuid>` via `realtime.send`, and the payload is only a version number. Public
    (non-private) channels must be allowed in the Realtime settings, which is the default.
 
-2. **Apply the schema and starting words** from your machine:
+2. **Apply the schema** from your machine:
 
    ```bash
    MIGRATION_DATABASE_URL="postgresql://…:5432/postgres" npm run db:migrate
    ```
 
-   (Alternatively paste `supabase/migrations/*.sql` and then `supabase/seed.sql` into the SQL
-   editor.)
+   (Alternatively paste each file in `supabase/migrations/` into the SQL editor, in order.)
 
 3. **Create the Vercel project** from this repository (framework: Next.js, defaults are fine) and
    set these environment variables for Production (and Preview if you like):
@@ -252,11 +250,10 @@ works.
 src/app                    pages (/, /r/[code]) and API route handlers
 src/components             home, room (loader, gate, lobby, top bar), game (entry, waiting,
                            reveal, victory, history), ui primitives
-src/lib/game               shared rules: normalization, constants, phases, room codes, words
+src/lib/game               shared rules: normalization, constants, phases, room codes, reveal copy
 src/lib/server             env validation, db client, sessions, rate limits, operations, SSE bus
 src/lib/client             API client, realtime, sync hook, sound engine, motion tokens
 supabase/migrations        schema, constraints, RLS, game functions
-supabase/seed.sql          starting words (generated: npm run db:seed-sql)
 scripts                    migrate, dev-local (embedded Postgres), e2e server
 tests, e2e                 Vitest and Playwright suites
 ```

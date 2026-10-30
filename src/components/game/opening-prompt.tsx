@@ -2,27 +2,20 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { COLOR_VAR } from "../ui/player-avatar";
-import { wordFontSize } from "./word-pill";
 import { ease, spring } from "@/lib/client/motion";
 import type { Participant } from "@/lib/types";
 
+const HEADLINE = ["Start", "anywhere."];
+
 /**
- * The round-one word. On a fresh match it "blooms": the players' colored
- * minds spread out from the center (the reverse of the victory merge), then
- * the letters rise into place.
+ * Round one has no given word: everyone opens with any word of their own. On a
+ * fresh match the players' colored minds fly apart from the center, each to
+ * its own starting point (the reverse of the victory merge), then the
+ * headline rises into place.
  */
-export function StartingWordDisplay({
-  word,
-  participants,
-  intro,
-}: {
-  word: string;
-  participants: Participant[];
-  intro: boolean;
-}) {
+export function OpeningPrompt({ participants, intro }: { participants: Participant[]; intro: boolean }) {
   const reduced = useReducedMotion();
   const play = intro && !reduced;
-  const letters = Array.from(word);
   const n = participants.length;
 
   return (
@@ -33,16 +26,7 @@ export function StartingWordDisplay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, y: -16, scale: 0.96, transition: { duration: 0.3, ease: ease.out } }}
     >
-      <motion.p
-        className="text-[12px] font-medium tracking-[0.18em] text-ink-soft uppercase"
-        initial={play ? { opacity: 0, y: 6 } : false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: play ? 0.9 : 0, duration: 0.5, ease: ease.out }}
-      >
-        Starting word
-      </motion.p>
-
-      <div className="relative mt-3 flex items-center justify-center">
+      <div className="relative flex items-center justify-center">
         {play && (
           <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
             {participants.map((p, i) => {
@@ -66,25 +50,33 @@ export function StartingWordDisplay({
           </div>
         )}
         <h2
-          className="word-type relative leading-none text-ink"
-          style={{ fontSize: wordFontSize(word, "hero"), letterSpacing: "0.02em" }}
-          aria-label={word}
-          data-testid="starting-word"
+          className="font-display relative text-[clamp(2.6rem,12vw,4.75rem)] leading-[1.02] font-[520] tracking-[-0.035em] text-ink"
+          style={{ fontVariationSettings: '"SOFT" 100, "WONK" 1, "opsz" 144' }}
+          data-testid="opening-prompt"
         >
-          {letters.map((letter, i) => (
+          {HEADLINE.map((word, i) => (
             <motion.span
-              key={`${letter}-${i}`}
-              aria-hidden
+              key={word}
               className="inline-block"
-              initial={play ? { opacity: 0, y: "0.35em", scale: 0.9 } : false}
+              initial={play ? { opacity: 0, y: "0.35em", scale: 0.94 } : false}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ ...spring.settle, delay: play ? 0.55 + i * 0.045 : 0 }}
+              transition={{ ...spring.settle, delay: play ? 0.45 + i * 0.12 : 0 }}
             >
-              {letter}
+              {word}
+              {i < HEADLINE.length - 1 && " "}
             </motion.span>
           ))}
         </h2>
       </div>
+
+      <motion.p
+        className="mt-4 max-w-[21rem] text-[15px] leading-relaxed text-ink-soft text-balance"
+        initial={play ? { opacity: 0, y: 6 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: play ? 0.9 : 0, duration: 0.5, ease: ease.out }}
+      >
+        Everyone picks any word, in secret. Then you&rsquo;ll try to meet in the middle.
+      </motion.p>
     </motion.div>
   );
 }

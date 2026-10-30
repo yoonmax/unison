@@ -22,13 +22,15 @@ export function clusterAnswers(answers: readonly RevealedAnswer[]): AnswerCluste
 const NUMBER_WORDS = ["Zero", "One", "Two", "Three", "Four"];
 
 /** Gentle, non-judgmental one-liner describing how close the group came. */
-export function agreementLine(answers: readonly RevealedAnswer[]): string {
+export function agreementLine(answers: readonly RevealedAnswer[], roundNumber = 2): string {
   const clusters = clusterAnswers(answers);
   const total = answers.length;
   const biggest = clusters[0]?.answers.length ?? 0;
 
   if (biggest === total) return "One word. All of you.";
   if (biggest === 1) {
+    // Everyone opens with a word of their own, so a scattered first round is the point.
+    if (roundNumber === 1) return `${NUMBER_WORDS[total]} starting points. Now find the middle.`;
     return total === 2 ? "Two minds, two directions." : "Every mind took its own path.";
   }
   const pairs = clusters.filter((c) => c.answers.length === 2).length;

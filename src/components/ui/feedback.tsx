@@ -94,7 +94,7 @@ export function ReconnectBanner({ online }: { online: boolean }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -12, scale: 0.96 }}
             transition={spring.soft}
-            className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] text-paper shadow-lift"
+            className="glass glass-ink flex items-center gap-2 rounded-full px-4 py-2 text-[13px]"
           >
             <WifiOff className="size-3.5" strokeWidth={2} aria-hidden />
             Reconnecting…
@@ -122,7 +122,7 @@ export function Toast({ message, toastKey }: { message: string | null; toastKey:
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, transition: { duration: 0.2, ease: ease.out } }}
             transition={spring.soft}
-            className="max-w-[24rem] rounded-2xl bg-ink/92 px-4 py-3 text-center text-[14px] leading-snug text-paper shadow-lift backdrop-blur"
+            className="glass glass-ink max-w-[24rem] rounded-2xl px-4 py-3 text-center text-[14px] leading-snug"
           >
             {message}
           </motion.div>

@@ -18,13 +18,11 @@ export function RoundWords({
   round,
   participants,
   mode,
-  startingWord,
   serverNow,
 }: {
   round: RevealedRound;
   participants: Participant[];
   mode: "reveal" | "clue";
-  startingWord: string;
   serverNow: () => number;
 }) {
   const reduced = useReducedMotion();
@@ -64,16 +62,9 @@ export function RoundWords({
       exit={{ opacity: 0, y: -12, transition: { duration: 0.28, ease: ease.out } }}
       transition={spring.soft}
     >
-      <motion.p layout="position" className="text-[12px] font-medium tracking-[0.18em] text-ink-soft uppercase">
-        {mode === "reveal" ? `Round ${round.number}` : `Round ${round.number} words`}
-        <span className="mx-2 text-ink-faint">·</span>
-        <span className="tracking-[0.06em] normal-case">from</span>{" "}
-        <span className="word-type text-ink tracking-[0.08em]">{startingWord}</span>
-      </motion.p>
-
       <motion.ul
         layout
-        className={cn("mt-5 flex max-w-[26rem] flex-wrap items-center justify-center", big ? "gap-y-5" : "gap-y-3")}
+        className={cn("flex max-w-[26rem] flex-wrap items-center justify-center", big ? "gap-y-5" : "gap-y-3")}
         transition={spring.drift}
       >
         {ordered.map(({ answer, clusterSize, first }, index) => {
@@ -131,7 +122,7 @@ export function RoundWords({
                   ease: ease.out,
                 }}
               >
-                {agreementLine(round.answers)}
+                {agreementLine(round.answers, round.number)}
               </motion.p>
             )}
           </AnimatePresence>

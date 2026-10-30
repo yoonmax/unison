@@ -54,7 +54,6 @@ export interface CurrentRound {
 export interface PublicMatch {
   id: string;
   status: MatchStatus;
-  startingWord: string;
   startedAt: string;
   completedAt: string | null;
   finalWord: string | null;

@@ -118,7 +118,7 @@ test.describe("interaction", () => {
     // When the results settle, focus moves to the next action.
     await expect(page.getByRole("button", { name: "Play again" })).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect(page.getByTestId("starting-word")).toBeVisible();
+    await expect(page.getByTestId("opening-prompt")).toBeVisible();
   });
 
   test("reduced motion still plays a full game", async ({ browser }) => {

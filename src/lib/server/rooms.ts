@@ -251,7 +251,6 @@ export async function getSnapshot(code: string, token: string): Promise<RoomSnap
         match = {
           id: matchRow.id,
           status: matchRow.status as MatchStatus,
-          startingWord: matchRow.starting_word,
           startedAt: iso(matchRow.started_at)!,
           completedAt: iso(matchRow.completed_at),
           finalWord: matchRow.final_word,

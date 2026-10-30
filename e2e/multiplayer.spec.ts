@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import {
   createRoom,
+  expectOpeningPrompt,
   joinViaCode,
   joinViaLink,
   newPlayer,
   recordApiBodies,
-  startingWord,
   submitWord,
   wordInput,
 } from "./helpers";
@@ -29,11 +29,9 @@ test("three players converge on one word, then play again", async ({ browser }) 
   // Only the host gets a start button.
   await expect(jamie.getByRole("button", { name: /Start game/ })).toHaveCount(0);
 
-  // 4–5. Host starts; everyone sees the same starting word.
+  // 4–5. Host starts; round one gives no word, so everyone opens with their own.
   await alex.getByRole("button", { name: "Start game" }).click();
-  const words = await Promise.all([alex, jamie, sam].map(startingWord));
-  expect(new Set(words).size).toBe(1);
-  expect(words[0]).toMatch(/^[A-Z]+$/);
+  await Promise.all([alex, jamie, sam].map(expectOpeningPrompt));
 
   // 6. Alex locks in BEACH and sees their own private confirmation.
   await submitWord(alex, "beach");
@@ -90,8 +88,5 @@ test("three players converge on one word, then play again", async ({ browser }) 
   // 15. The host starts another match in the same room.
   await expect(jamie.getByRole("button", { name: "Play again" })).toHaveCount(0);
   await alex.getByRole("button", { name: "Play again" }).click();
-  for (const page of [alex, jamie, sam]) {
-    await expect(page.getByTestId("starting-word")).toBeVisible();
-    await expect(page.getByLabel("Your word for round 1")).toBeVisible();
-  }
+  await Promise.all([alex, jamie, sam].map(expectOpeningPrompt));
 });

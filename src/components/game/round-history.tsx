@@ -12,13 +12,11 @@ import type { Participant, RevealedRound } from "@/lib/types";
 export function RoundHistory({
   rounds,
   participants,
-  startingWord,
   defaultOpen = false,
   className,
 }: {
   rounds: RevealedRound[];
   participants: Participant[];
-  startingWord: string;
   defaultOpen?: boolean;
   className?: string;
 }) {
@@ -51,10 +49,7 @@ export function RoundHistory({
             transition={{ duration: 0.32, ease: ease.out }}
             className="overflow-hidden"
           >
-            <ol className="mx-auto mt-2 flex max-w-[30rem] flex-col gap-2 rounded-3xl bg-card/80 p-4 ring-1 ring-line">
-              <li className="text-[12.5px] text-ink-soft">
-                Started from <span className="word-type text-ink">{startingWord}</span>
-              </li>
+            <ol className="mx-auto mt-2 flex max-w-[30rem] flex-col gap-2 glass rounded-3xl p-4">
               {rounds.map((round) => (
                 <li key={round.number} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="w-[4.5rem] shrink-0 text-[12px] font-medium text-ink-faint">

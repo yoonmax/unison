@@ -46,7 +46,7 @@ export function ConfirmDialog({
         if (e.target === ref.current) onClose();
       }}
       aria-labelledby="confirm-title"
-      className="m-auto w-[min(92vw,24rem)] rounded-[28px] bg-card p-0 text-ink shadow-lift ring-1 ring-line backdrop:bg-ink/25 backdrop:backdrop-blur-[2px] open:animate-[dialog-in_220ms_var(--ease-soft)]"
+      className="glass m-auto w-[min(92vw,24rem)] rounded-[28px] p-0 text-ink backdrop:bg-ink/20 backdrop:backdrop-blur-[3px] open:animate-[dialog-in_260ms_var(--ease-soft)]"
     >
       <div className="p-6">
         <h2 id="confirm-title" className="font-display text-[22px] font-[560] tracking-[-0.02em]">
@@ -61,7 +61,7 @@ export function ConfirmDialog({
             variant="primary"
             loading={busy}
             onClick={onConfirm}
-            className={destructive ? "bg-peach-deep hover:bg-[#8e4430]" : undefined}
+            className={destructive ? "[background:linear-gradient(180deg,#b9654a,#934530)]" : undefined}
           >
             {confirmLabel}
           </Button>

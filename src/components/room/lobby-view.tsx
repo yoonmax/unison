@@ -127,7 +127,7 @@ function PlayerRow({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 14, scale: 0.92, transition: { duration: 0.22 } }}
       transition={spring.soft}
-      className="flex min-h-[3.75rem] items-center gap-3 rounded-[22px] bg-card/90 py-2 pr-2 pl-2.5 ring-1 ring-line"
+      className="glass flex min-h-[3.75rem] items-center gap-3 rounded-[22px] py-2 pr-2 pl-2.5"
     >
       {/* A small colored mind that blooms into the avatar. */}
       <motion.span initial={{ scale: 0.35 }} animate={{ scale: 1 }} transition={{ ...spring.settle, delay: 0.08 }}>
@@ -208,13 +208,13 @@ export function LobbyView({
       transition={{ duration: 0.4, ease: ease.out }}
     >
       <div className="flex w-full max-w-[26rem] flex-col">
-        <p className="text-center text-[12px] font-medium tracking-[0.18em] text-ink-soft uppercase">Room code</p>
         <p
-          className="font-display mt-1 text-center text-[clamp(2.75rem,15vw,3.75rem)] leading-none font-[540] tracking-[0.22em] pl-[0.22em]"
+          className="font-display mt-2 text-center text-[clamp(2.9rem,16vw,4rem)] leading-none font-[540] tracking-[0.2em] pl-[0.2em]"
           aria-label={`Room code ${room.code.split("").join(" ")}`}
         >
           {room.code}
         </p>
+        <p className="mt-2.5 text-center text-[14px] text-ink-soft">Share the code, or send the link.</p>
         <div className="mt-5">
           <RoomShareControls code={room.code} />
         </div>
@@ -267,7 +267,8 @@ export function LobbyView({
               </p>
             </>
           ) : (
-            <p className="rounded-2xl bg-card/80 px-4 py-4 text-center text-[15px] text-ink-soft ring-1 ring-line">
+            <p className="flex items-center justify-center gap-2.5 py-3 text-center text-[15px] text-ink-soft">
+              <span className="size-2 animate-pulse rounded-full bg-lavender" aria-hidden />
               {host ? `Waiting for ${host.nickname} to start the game.` : "Waiting for the host to start."}
             </p>
           )}
@@ -276,8 +277,8 @@ export function LobbyView({
         <div className="mt-8 rounded-[24px] bg-paper-deep/70 px-5 py-4 text-[14px] leading-relaxed text-ink-soft">
           <p className="font-medium text-ink">How to play</p>
           <p className="mt-1">
-            Everyone sees one starting word and secretly types the first word it brings to mind. Then you all see each
-            other&rsquo;s words and try again — aiming for the word you think everyone else will pick.
+            Everyone secretly types any word at all. Then you all see each other&rsquo;s words and try again — aiming
+            for the word you think everyone else will pick. Keep going until you all say the same thing.
           </p>
           <p className="mt-2 text-ink">Don&rsquo;t say your word out loud. Find it together.</p>
         </div>

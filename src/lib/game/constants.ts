@@ -7,8 +7,8 @@ export const MAX_PLAYERS = 4;
 export const WORD_MAX_LENGTH = 24;
 export const NICKNAME_MAX_LENGTH = 16;
 
-/** Intro before round 1 accepts answers (starting word blooms in). */
-export const START_INTRO_MS = 2_400;
+/** Intro before round 1 accepts answers (the opening prompt blooms in). */
+export const START_INTRO_MS = 1_800;
 /** How long a non-winning reveal stays on screen before the next round opens. */
 export const REVEAL_DURATION_MS = 4_500;
 

@@ -8,7 +8,6 @@ export async function GET(_request: Request, ctx: RouteContext<"/api/rooms/[code
     const token = await requireSessionToken(code);
     const snapshot = await getSnapshot(code, token);
     return json({
-      startingWord: snapshot.match?.startingWord ?? null,
       participants: snapshot.match?.participants ?? [],
       rounds: snapshot.match?.rounds ?? [],
     });

@@ -1,7 +1,7 @@
 "use client";
 
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { COLOR_VAR } from "../ui/player-avatar";
 import { wordFontSize } from "./word-pill";
 import { ease, spring } from "@/lib/client/motion";
@@ -42,7 +42,19 @@ function Orb({ slot, total, ready, color }: { slot: number; total: number; ready
     <motion.div className="absolute inset-0" style={{ rotate }}>
       <motion.span
         className="absolute top-1/2 left-1/2 -mt-2.5 -ml-2.5 block size-5 rounded-full"
-        style={{ backgroundColor: ready ? c.base : c.tint, boxShadow: `inset 0 0 0 1.5px ${c.base}` }}
+        style={
+          ready
+            ? {
+                // A glossy droplet: lit from the top-left, deepening toward its edge.
+                background: `radial-gradient(circle at 34% 28%, #fff 0 8%, ${c.base} 46%, color-mix(in srgb, ${c.base} 70%, ${c.deep}) 100%)`,
+                boxShadow: `0 4px 10px -3px color-mix(in srgb, ${c.deep} 60%, transparent)`,
+              }
+            : {
+                // Still thinking: a hollow bead of tinted glass.
+                background: `radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.95) 0 10%, ${c.tint} 55%)`,
+                boxShadow: `inset 0 0 0 1.5px ${c.base}`,
+              }
+        }
         animate={{ y: ready ? -INNER_RADIUS : -OUTER_RADIUS, scale: ready ? 1 : 0.72 }}
         transition={spring.drift}
       >
@@ -113,8 +125,9 @@ export function WaitingAnimation({
         ))}
         {/* The thought lifts up from where the input was and settles, locked. */}
         <motion.div
-          className="relative z-10 max-w-[8.5rem] rounded-full px-4 py-2 text-ink shadow-lift"
-          style={{ backgroundColor: COLOR_VAR[myColor].base }}
+          className="glass glass-tint relative z-10 max-w-[8.5rem] rounded-full px-4 py-2 text-ink"
+          data-emphasis="match"
+          style={{ "--tint": COLOR_VAR[myColor].base, "--tint-deep": COLOR_VAR[myColor].deep } as CSSProperties}
           initial={restored ? false : { y: 120, scale: 1.5, opacity: 0.4 }}
           animate={{ y: 0, scale: 1, opacity: 1 }}
           transition={spring.settle}

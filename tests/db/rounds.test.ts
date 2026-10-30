@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { endMatch, getSnapshot, startMatch, submitAnswer } from "@/lib/server/rooms";
-import { STARTING_WORDS } from "@/lib/game/starting-words";
 import { adminSql, expectGameError, openCurrentRound, snapshotOf, startedRoom } from "../support/game";
 
-// Words that are not starting words, so they can't appear in a snapshot by coincidence.
+// An unusual word, so it can't appear in a snapshot by coincidence.
 const SECRET = "QUIXOTIC";
 
 describe("rounds", () => {
-  it("gives every player the same starting word from the curated list", async () => {
+  it("opens round one with no given word: each player's own first word is what gets revealed", async () => {
     const room = await startedRoom(3);
-    const words = await Promise.all([0, 1, 2].map(async (i) => (await snapshotOf(room, i)).match!.startingWord));
-    expect(new Set(words).size).toBe(1);
-    expect(STARTING_WORDS).toContain(words[0]);
+    const before = await snapshotOf(room, 1);
+    expect(before.match!.currentRound.number).toBe(1);
+    expect(before.match!.rounds).toEqual([]);
+    expect(before.match).not.toHaveProperty("startingWord");
+
+    await submitAnswer(room.code, room.players[0].token, 1, "lantern");
+    await submitAnswer(room.code, room.players[1].token, 1, "Penguin");
+    await submitAnswer(room.code, room.players[2].token, 1, "THUNDER");
+    const after = await snapshotOf(room, 2);
+    expect(after.match!.rounds[0].answers.map((a) => a.word)).toEqual(["LANTERN", "PENGUIN", "THUNDER"]);
+    expect(after.match!.currentRound.number).toBe(2);
   });
 
   it("keeps submitted answers secret until everyone has answered", async () => {
@@ -90,19 +97,18 @@ describe("rounds", () => {
     expect((await snapshotOf(room, 0)).match!.status).toBe("active");
   });
 
-  it("allows repeated words, including the starting word", async () => {
+  it("allows repeating earlier words, your own or someone else's", async () => {
     const room = await startedRoom(2);
-    const start = (await snapshotOf(room, 0)).match!.startingWord;
     await submitAnswer(room.code, room.players[0].token, 1, "ECHO");
-    await submitAnswer(room.code, room.players[1].token, 1, start);
+    await submitAnswer(room.code, room.players[1].token, 1, "RIDGE");
     await openCurrentRound(room.code);
     await submitAnswer(room.code, room.players[0].token, 2, "ECHO");
-    await submitAnswer(room.code, room.players[1].token, 2, start);
+    await submitAnswer(room.code, room.players[1].token, 2, "PINE");
     await openCurrentRound(room.code);
-    await submitAnswer(room.code, room.players[0].token, 3, start);
-    await submitAnswer(room.code, room.players[1].token, 3, start);
+    await submitAnswer(room.code, room.players[0].token, 3, "RIDGE");
+    await submitAnswer(room.code, room.players[1].token, 3, "RIDGE");
     const snap = await snapshotOf(room, 0);
-    expect(snap.match).toMatchObject({ status: "won", finalWord: start });
+    expect(snap.match).toMatchObject({ status: "won", finalWord: "RIDGE" });
     expect(snap.match!.rounds.map((r) => r.number)).toEqual([1, 2, 3]);
   });
 
@@ -139,7 +145,7 @@ describe("rounds", () => {
     await expectGameError(submitAnswer(room.code, room.players[1].token, 1, "LATE"), "NO_ACTIVE_MATCH");
   });
 
-  it("lets the host start another match after a win, with a different starting word", async () => {
+  it("lets the host start another match after a win", async () => {
     const room = await startedRoom(2);
     const first = (await snapshotOf(room, 0)).match!;
     await submitAnswer(room.code, room.players[0].token, 1, "SAME");
@@ -149,7 +155,7 @@ describe("rounds", () => {
     expect(next.id).not.toBe(first.id);
     expect(next.status).toBe("active");
     expect(next.currentRound.number).toBe(1);
-    expect(next.startingWord).not.toBe(first.startingWord);
+    expect(next.rounds).toEqual([]);
   });
 
   it("refuses to mark a match won unless every answer matches (database guard)", async () => {

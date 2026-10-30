@@ -130,19 +130,17 @@ function RoomInner({
     }
     if (phase !== before.phase) {
       const last = lastRevealedRound(snapshot);
-      if (phase === "starting" && match) announce(`New game. The starting word is ${match.startingWord}.`);
+      if (phase === "starting" && match) announce("New game. Everyone, think of any word.");
       if (phase === "revealing" && last) {
         play("reveal", last.answers.length);
         const words = last.answers
           .map((a) => `${match?.participants.find((p) => p.playerId === a.playerId)?.nickname ?? "Someone"}: ${a.word}`)
           .join(", ");
-        announce(`Round ${last.number} revealed. ${words}. ${agreementLine(last.answers)}`);
+        announce(`Round ${last.number} revealed. ${words}. ${agreementLine(last.answers, last.number)}`);
       }
       if (phase === "collecting" && round) {
         announce(
-          round.number === 1
-            ? `Round 1. Type a word for ${match?.startingWord}.`
-            : `Round ${round.number}. Where do your thoughts meet?`,
+          round.number === 1 ? "Round 1. Type any word." : `Round ${round.number}. Where do your thoughts meet?`,
         );
       }
       if (phase === "won" && match) {

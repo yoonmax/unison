@@ -30,8 +30,8 @@ export interface WordPillProps extends HTMLMotionProps<"div"> {
 }
 
 /**
- * A submitted word as an object: tinted capsule in the player's color, with
- * their name and shape mark so identity never relies on color alone.
+ * A submitted word as an object: a lozenge of glass tinted in the player's
+ * color, with their name and shape mark so identity never relies on color alone.
  */
 export const WordPill = forwardRef<HTMLDivElement, WordPillProps>(function WordPill(
   { word, color, name, size = "reveal", emphasis = "normal", className, style, ...props },
@@ -41,19 +41,13 @@ export const WordPill = forwardRef<HTMLDivElement, WordPillProps>(function WordP
   return (
     <motion.div
       ref={ref}
+      data-emphasis={emphasis}
       className={cn(
-        "relative flex max-w-full flex-col items-center rounded-[26px] text-ink",
+        "glass glass-tint flex max-w-full flex-col items-center rounded-[26px] text-ink",
         size === "reveal" ? "px-5 pt-2.5 pb-3" : "px-4 pt-1.5 pb-2",
         className,
       )}
-      style={{
-        backgroundColor: c.tint,
-        boxShadow:
-          emphasis === "match"
-            ? `inset 0 0 0 1.5px ${c.base}, 0 14px 30px -18px ${c.deep}`
-            : `inset 0 0 0 1px ${c.base}`,
-        ...style,
-      }}
+      style={{ "--tint": c.base, "--tint-deep": c.deep, ...style } as WordPillProps["style"]}
       {...props}
     >
       {name && (

@@ -2,7 +2,7 @@
 
 import { Check, Share2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { useSound } from "../providers";
 import { Button } from "../ui/button";
 import { COLOR_VAR, PlayerAvatar } from "../ui/player-avatar";
@@ -35,13 +35,16 @@ export function shareText(match: PublicMatch): string {
 }
 
 /**
- * The signature moment. Every player's pill — all showing the same word —
- * drifts to the center, overlaps, and resolves into one larger word; a soft
- * ripple in everyone's colors goes out; then the result settles in.
+ * The signature moment. Every player's glass pill — all showing the same word —
+ * drifts to the center. On the way the glass turns liquid: the pills become
+ * droplets of their players' colors that fuse as they touch (an SVG "goo"
+ * filter, bounded to this box), then contract into one larger word while a
+ * ripple in everyone's colors goes out.
  *
- * Offsets to the center are measured from the real layout at the moment of
- * convergence, so the motion is correct at any screen size, and only
- * transforms/opacity animate.
+ * Three identically laid-out layers move together: glass shells, liquid
+ * droplets, and the words on top. Offsets to the center are measured from the
+ * real layout, so the motion is right at any size; only transforms and
+ * opacity animate.
  */
 function ConvergenceAnimation({
   word,
@@ -76,12 +79,54 @@ function ConvergenceAnimation({
     );
   }, [converging, offsets]);
 
+  const grid = cn(
+    "col-start-1 row-start-1 grid w-full max-w-[24rem] place-items-center",
+    n === 2 ? "grid-cols-2 gap-6" : "grid-cols-2 gap-x-4 gap-y-8",
+  );
+  const cell = (i: number) =>
+    cn("flex max-w-full flex-col items-center rounded-[26px] px-5 pt-2.5 pb-3", n === 3 && i === 2 && "col-span-2");
+
+  // Shared by every layer so the shells, droplets and words travel together.
+  // Droplets stop a little short of dead center, spread around it, so the
+  // fused liquid keeps everyone's color instead of the top one hiding the rest.
+  const travel = (i: number, spread = 0) => {
+    const offset = offsets?.[i] ?? { x: 0, y: 0 };
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    return {
+      x: converging ? offset.x + FRINGE[i % FRINGE.length].x + Math.cos(angle) * spread : 0,
+      y: converging ? offset.y + FRINGE[i % FRINGE.length].y + Math.sin(angle) * spread * 0.55 : 0,
+    };
+  };
+  const travelTransition = (i: number) => ({
+    ...spring.drift,
+    delay: stage === "scattered" ? 0.1 + i * 0.09 : i * 0.04,
+  });
+  const entrance = animateIn ? { opacity: 0, scale: 0.6, x: 0, y: 20 } : false;
+
+  const label = (p: Participant, visible: boolean) => (
+    <span className={cn("text-[12px] font-medium text-ink-soft", !visible && "invisible")}>{p.nickname}</span>
+  );
+  const sizer = (
+    <span className="word-type invisible block leading-[1.05]" style={{ fontSize: wordFontSize(word, "reveal") }}>
+      {word}
+    </span>
+  );
+
   return (
     <div
       ref={containerRef}
       className="relative flex h-[14rem] w-full items-center justify-center sm:h-[16rem]"
       aria-hidden
     >
+      <svg width="0" height="0" className="absolute">
+        <defs>
+          <filter id="unison-goo" colorInterpolationFilters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="9" />
+            <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Ripple in everyone's colors once the words become one. */}
       {merged &&
         animateIn &&
@@ -96,42 +141,60 @@ function ConvergenceAnimation({
           />
         ))}
 
-      <div
-        className={cn(
-          "relative grid w-full max-w-[24rem] place-items-center",
-          n === 2 ? "grid-cols-2 gap-6" : "grid-cols-2 gap-x-4 gap-y-8",
-        )}
-      >
-        {participants.map((p, i) => {
-          const c = COLOR_VAR[p.color];
-          const offset = offsets?.[i] ?? { x: 0, y: 0 };
-          return (
+      <div className="grid w-full max-w-[24rem] place-items-center">
+        {/* 1. Liquid droplets: hidden until the minds start moving together. */}
+        <motion.div
+          className={grid}
+          style={{ filter: "url(#unison-goo)" }}
+          initial={false}
+          animate={{ opacity: converging && !merged ? 1 : 0 }}
+          transition={{ duration: merged ? 0.5 : 0.35 }}
+        >
+          {participants.map((p, i) => (
+            <motion.div
+              key={p.playerId}
+              className={cell(i)}
+              style={{ backgroundColor: COLOR_VAR[p.color].base }}
+              initial={entrance}
+              animate={{ ...travel(i, 22), opacity: 1, scale: merged ? 0.5 : 0.94 }}
+              transition={travelTransition(i)}
+            >
+              {label(p, false)}
+              {sizer}
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* 2. Glass shells: the pills as they were revealed, melting away. */}
+        <div className={grid}>
+          {participants.map((p, i) => (
             <motion.div
               key={p.playerId}
               ref={(el) => {
                 pillRefs.current[i] = el;
               }}
-              className={cn(
-                "flex max-w-full flex-col items-center rounded-[26px] px-5 pt-2.5 pb-3",
-                n === 3 && i === 2 && "col-span-2",
-              )}
-              style={{ boxShadow: `inset 0 0 0 1px ${c.base}` }}
-              initial={animateIn ? { opacity: 0, scale: 0.6, x: 0, y: 20 } : false}
-              animate={{
-                opacity: merged ? 0 : 1,
-                scale: merged ? 1.2 : converging ? 1.06 : 1,
-                // While overlapping, each mind sits a hair off-center so their
-                // colors fringe the shared word before it resolves into one.
-                x: converging ? offset.x + FRINGE[i % FRINGE.length].x : 0,
-                y: converging ? offset.y + FRINGE[i % FRINGE.length].y : 0,
-                backgroundColor: converging ? `${c.base}22` : c.tint,
-              }}
-              transition={{
-                ...spring.drift,
-                delay: stage === "scattered" ? 0.1 + i * 0.09 : i * 0.04,
-                opacity: { duration: 0.35 },
-                backgroundColor: { duration: 0.6 },
-              }}
+              className={cn("glass glass-tint", cell(i))}
+              data-emphasis="match"
+              style={{ "--tint": COLOR_VAR[p.color].base, "--tint-deep": COLOR_VAR[p.color].deep } as CSSProperties}
+              initial={entrance}
+              animate={{ ...travel(i), opacity: converging ? 0 : 1, scale: 1 }}
+              transition={{ ...travelTransition(i), opacity: { duration: 0.4, delay: i * 0.04 } }}
+            >
+              {label(p, false)}
+              {sizer}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* 3. The words themselves, overlapping into one before they resolve. */}
+        <div className={grid}>
+          {participants.map((p, i) => (
+            <motion.div
+              key={p.playerId}
+              className={cell(i)}
+              initial={entrance}
+              animate={{ ...travel(i), opacity: merged ? 0 : 1, scale: merged ? 1.2 : converging ? 1.06 : 1 }}
+              transition={{ ...travelTransition(i), opacity: { duration: 0.35 } }}
             >
               <motion.span
                 className="text-[12px] font-medium text-ink-soft"
@@ -149,8 +212,8 @@ function ConvergenceAnimation({
                 {word}
               </motion.span>
             </motion.div>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
       <AnimatePresence>
@@ -159,9 +222,9 @@ function ConvergenceAnimation({
             key="merged"
             className="word-type absolute text-ink"
             style={{ fontSize: wordFontSize(word, "hero") }}
-            initial={animateIn ? { opacity: 0, scale: 0.7, letterSpacing: "0.2em" } : false}
-            animate={{ opacity: 1, scale: 1, letterSpacing: "0.03em" }}
-            transition={{ ...spring.settle, opacity: { duration: 0.4 } }}
+            initial={animateIn ? { opacity: 0, scale: 0.7, letterSpacing: "0.2em", filter: "blur(6px)" } : false}
+            animate={{ opacity: 1, scale: 1, letterSpacing: "0.03em", filter: "blur(0px)" }}
+            transition={{ ...spring.settle, opacity: { duration: 0.4 }, filter: { duration: 0.45 } }}
           >
             {word}
           </motion.span>
@@ -205,10 +268,13 @@ export function VictoryView({
     if (!showText) return;
     // The input that had focus is gone; give keyboard users the next action
     // (without stealing focus from anything they've already moved to).
-    const timer = setTimeout(() => {
-      const active = document.activeElement;
-      if (!active || active === document.body) primaryRef.current?.focus({ preventScroll: true });
-    }, (fresh ? victoryTiming.results - victoryTiming.title : 0) * 1000 + 350);
+    const timer = setTimeout(
+      () => {
+        const active = document.activeElement;
+        if (!active || active === document.body) primaryRef.current?.focus({ preventScroll: true });
+      },
+      (fresh ? victoryTiming.results - victoryTiming.title : 0) * 1000 + 350,
+    );
     return () => clearTimeout(timer);
   }, [showText, fresh]);
 
@@ -311,7 +377,7 @@ export function VictoryView({
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spring.soft, delay: delay(victoryTiming.results) }}
           >
-            <div className="w-full rounded-[28px] bg-card/90 p-5 shadow-soft ring-1 ring-line">
+            <div className="w-full glass rounded-[28px] p-5">
               <p className="text-center text-[14px] text-ink-soft">{NUMBER_WORDS[n]} minds became one.</p>
               <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
                 <div>
@@ -361,7 +427,7 @@ export function VictoryView({
               </div>
             </div>
 
-            <RoundHistory rounds={match.rounds} participants={match.participants} startingWord={match.startingWord} />
+            <RoundHistory rounds={match.rounds} participants={match.participants} />
           </motion.div>
         )}
       </AnimatePresence>

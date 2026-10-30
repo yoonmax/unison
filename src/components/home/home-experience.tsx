@@ -100,8 +100,8 @@ export function HomeExperience() {
           transition={{ delay: 1.3, duration: 0.6 }}
         >
           <ol className="mx-auto grid max-w-[22rem] gap-1.5 text-[14px] leading-snug text-ink-soft">
-            <li>Everyone sees the same word.</li>
-            <li>Each of you answers with one word, in secret.</li>
+            <li>Everyone types any word, in secret.</li>
+            <li>The words are revealed together.</li>
             <li>Use what you saw to meet in the middle — until you all say the same thing.</li>
           </ol>
           <p className="mt-4 text-[12.5px] tracking-[0.01em] text-ink-faint">

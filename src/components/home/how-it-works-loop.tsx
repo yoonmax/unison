@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { COLOR_VAR } from "../ui/player-avatar";
 import { spring } from "@/lib/client/motion";
 import type { PlayerColor } from "@/lib/types";
@@ -42,7 +42,7 @@ export function HowItWorksLoop({ paused }: { paused?: boolean }) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={spring.settle}
-                className="word-type rounded-full bg-ink px-5 py-2 text-[15px] text-paper shadow-lift"
+                className="glass glass-ink word-type rounded-full px-5 py-2 text-[15px]"
               >
                 OCEAN
               </motion.span>
@@ -58,12 +58,15 @@ export function HowItWorksLoop({ paused }: { paused?: boolean }) {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.9 }}
                       transition={{ ...spring.soft, delay: i * 0.09 }}
-                      className="word-type rounded-full px-3.5 py-1.5 text-[13px] text-ink"
-                      style={{
-                        backgroundColor: COLOR_VAR[COLORS[i]].tint,
-                        boxShadow: `inset 0 0 0 1px ${COLOR_VAR[COLORS[i]].base}${match ? "" : "99"}`,
-                        order: match ? 0 : 1,
-                      }}
+                      className="glass glass-tint word-type rounded-full px-3.5 py-1.5 text-[13px] text-ink"
+                      data-emphasis={match ? "match" : "normal"}
+                      style={
+                        {
+                          "--tint": COLOR_VAR[COLORS[i]].base,
+                          "--tint-deep": COLOR_VAR[COLORS[i]].deep,
+                          order: match ? 0 : 1,
+                        } as CSSProperties
+                      }
                     >
                       {word}
                     </motion.span>

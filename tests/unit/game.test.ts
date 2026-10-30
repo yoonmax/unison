@@ -3,7 +3,6 @@ import { randomInt } from "node:crypto";
 import { agreementLine, clusterAnswers } from "@/lib/game/clusters";
 import { derivePhase, nextPhaseBoundary } from "@/lib/game/phase";
 import { generateRoomCode, parseRoomCode, ROOM_CODE_ALPHABET } from "@/lib/game/room-code";
-import { STARTING_WORDS } from "@/lib/game/starting-words";
 import type { RoomSnapshot } from "@/lib/types";
 
 describe("room codes", () => {
@@ -26,14 +25,6 @@ describe("room codes", () => {
   });
 });
 
-describe("starting words", () => {
-  it("has at least 150 unique, valid words", () => {
-    expect(STARTING_WORDS.length).toBeGreaterThanOrEqual(150);
-    expect(new Set(STARTING_WORDS).size).toBe(STARTING_WORDS.length);
-    for (const w of STARTING_WORDS) expect(w).toMatch(/^[A-Z]{1,24}$/);
-  });
-});
-
 describe("clusters", () => {
   const a = (playerId: string, word: string) => ({ playerId, word });
 
@@ -52,6 +43,14 @@ describe("clusters", () => {
     expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B"), a("4", "C")])).toBe("Almost in sync.");
     expect(agreementLine([a("1", "A"), a("2", "A")])).toBe("One word. All of you.");
   });
+
+  it("treats a scattered first round as the expected starting point", () => {
+    expect(agreementLine([a("1", "A"), a("2", "B"), a("3", "C")], 1)).toBe(
+      "Three starting points. Now find the middle.",
+    );
+    expect(agreementLine([a("1", "A"), a("2", "B")], 1)).toBe("Two starting points. Now find the middle.");
+    expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B")], 1)).toBe("Two minds met. One to go.");
+  });
 });
 
 describe("phase", () => {
@@ -66,7 +65,6 @@ describe("phase", () => {
       match: {
         id: "m",
         status: "active",
-        startingWord: "OCEAN",
         startedAt: new Date(0).toISOString(),
         completedAt: null,
         finalWord: null,

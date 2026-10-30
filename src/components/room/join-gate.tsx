@@ -77,8 +77,7 @@ export function JoinGate({
         transition={{ duration: 0.5, ease: ease.out }}
         className="relative z-10 flex w-full max-w-[24rem] flex-1 flex-col justify-center pb-[8vh]"
       >
-        <p className="text-[13px] font-medium tracking-[0.12em] text-ink-soft uppercase">You&rsquo;re invited</p>
-        <h1 className="font-display mt-2 text-[clamp(2rem,9vw,2.6rem)] font-[540] leading-[1.05] tracking-[-0.03em]">
+        <h1 className="font-display text-[clamp(2.1rem,9.5vw,2.75rem)] font-[540] leading-[1.05] tracking-[-0.03em]">
           {preview.hostName ? (
             <>
               Sync up with <span className="italic">{preview.hostName}</span>
@@ -88,8 +87,9 @@ export function JoinGate({
           )}
         </h1>
         <p className="mt-3 text-[15px] text-ink-soft">
-          Room <span className="font-display font-[600] tracking-[0.18em] text-ink">{code}</span> ·{" "}
-          {NUMBER_WORDS[waiting]} {waiting === 1 ? "is" : "are"} waiting
+          You&rsquo;re invited to room{" "}
+          <span className="font-display mr-[-0.18em] font-[600] tracking-[0.18em] text-ink">{code}</span>.{" "}
+          {NUMBER_WORDS[waiting]} {waiting === 1 ? "is" : "are"} waiting.
         </p>
 
         <form onSubmit={submit} noValidate className="mt-8 flex flex-col gap-1">

@@ -36,10 +36,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         aria-invalid={error ? true : undefined}
         aria-describedby={error || hint ? messageId : undefined}
         className={cn(
-          "h-14 w-full rounded-2xl bg-card px-5 text-[17px] text-ink placeholder:text-ink-faint",
-          "ring-1 ring-line-strong transition-[box-shadow,background-color] duration-200 ease-[var(--ease-soft)]",
-          "focus:bg-white focus:shadow-[0_0_0_5px_var(--color-lavender-tint)] focus:ring-lavender-deep/50 focus:outline-none",
-          error && "ring-peach-deep/50 focus:shadow-[0_0_0_5px_var(--color-peach-tint)]",
+          "glass h-14 w-full rounded-2xl px-5 text-[17px] text-ink placeholder:text-ink-faint",
+          // Outline (not ring) for focus/error, so the glass rim and shadow stay intact.
+          "outline-2 outline-offset-2 outline-transparent transition-[outline-color,background-color] duration-200 ease-[var(--ease-soft)]",
+          "focus:bg-white/85 focus:outline-lavender-deep/35",
+          error && "outline-peach-deep/45 focus:outline-peach-deep/45",
           inputClassName,
         )}
         {...props}

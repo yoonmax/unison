@@ -17,7 +17,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: "Unison — Different minds. One word.",
   description:
-    "A cooperative word game for 2–4 friends. Everyone sees one word, everyone answers in secret, and you keep going until you all say the same thing.",
+    "A cooperative word game for 2–4 friends. Everyone starts with a word of their own, in secret, and you keep going until you all say the same thing.",
   applicationName: "Unison",
   openGraph: {
     title: "Unison",

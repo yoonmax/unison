@@ -46,10 +46,10 @@ export async function submitWord(page: Page, word: string): Promise<void> {
   await expect(input).toBeHidden();
 }
 
-export async function startingWord(page: Page): Promise<string> {
-  const heading = page.getByTestId("starting-word");
-  await expect(heading).toBeVisible();
-  return (await heading.getAttribute("aria-label")) ?? "";
+/** Round one has no given word: everyone sees the same open prompt. */
+export async function expectOpeningPrompt(page: Page): Promise<void> {
+  await expect(page.getByTestId("opening-prompt")).toHaveText(/Start\s+anywhere\./);
+  await expect(page.getByLabel("Your word for round 1")).toBeVisible();
 }
 
 /** Everything the page could have learned about the room from the network. */

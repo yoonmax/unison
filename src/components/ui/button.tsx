@@ -3,16 +3,15 @@
 import { motion, type HTMLMotionProps } from "motion/react";
 import { forwardRef, type ReactNode } from "react";
 import { spring } from "@/lib/client/motion";
+import { sheenHandlers } from "@/lib/client/sheen";
 import { cn } from "@/lib/client/cn";
 
 type Variant = "primary" | "secondary" | "ghost" | "quiet";
 type Size = "lg" | "md" | "sm";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-ink text-paper shadow-[0_1px_0_rgb(255_255_255/0.08)_inset,0_10px_24px_-14px_rgb(38_38_38/0.7)] hover:bg-[#333] disabled:bg-ink/25 disabled:text-paper/90 disabled:shadow-none",
-  secondary:
-    "bg-card text-ink ring-1 ring-line-strong shadow-soft hover:ring-ink/25 disabled:text-ink-faint disabled:shadow-none",
+  primary: "glass glass-ink disabled:opacity-35",
+  secondary: "glass text-ink disabled:text-ink-faint",
   ghost: "bg-transparent text-ink hover:bg-ink/5 disabled:text-ink-faint",
   quiet: "bg-ink/[0.045] text-ink hover:bg-ink/[0.08] disabled:text-ink-faint",
 };
@@ -31,23 +30,46 @@ export interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children">
   children?: ReactNode;
 }
 
-/** Tactile button: compresses on press, springs back on release. */
+/**
+ * Tactile button. Primary and secondary are glass (smoked and clear); a press
+ * squashes it slightly like something soft, then it springs back.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", loading, icon, className, children, disabled, ...props },
+  {
+    variant = "primary",
+    size = "md",
+    loading,
+    icon,
+    className,
+    children,
+    disabled,
+    onPointerMove,
+    onPointerLeave,
+    ...props
+  },
   ref,
 ) {
   const inactive = disabled || loading;
+  const glass = variant === "primary" || variant === "secondary";
   return (
     <motion.button
       ref={ref}
       whileHover={inactive ? undefined : { y: -1 }}
-      whileTap={inactive ? undefined : { scale: 0.965, y: 0 }}
+      whileTap={inactive ? undefined : { scaleX: 0.985, scaleY: 0.94, y: 0 }}
       transition={spring.press}
       disabled={disabled}
       aria-busy={loading || undefined}
+      onPointerMove={(event) => {
+        if (glass) sheenHandlers.onPointerMove(event);
+        onPointerMove?.(event);
+      }}
+      onPointerLeave={(event) => {
+        if (glass) sheenHandlers.onPointerLeave(event);
+        onPointerLeave?.(event);
+      }}
       className={cn(
         "relative inline-flex select-none items-center justify-center rounded-full font-medium tracking-[-0.01em]",
-        "transition-[background-color,color,box-shadow] duration-200 ease-[var(--ease-soft)]",
+        "transition-[background-color,color,box-shadow,opacity] duration-200 ease-[var(--ease-soft)]",
         "disabled:cursor-not-allowed",
         variants[variant],
         sizes[size],

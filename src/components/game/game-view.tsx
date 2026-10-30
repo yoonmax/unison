@@ -3,9 +3,9 @@
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { OpeningPrompt } from "./opening-prompt";
 import { RoundHistory } from "./round-history";
 import { RoundWords } from "./round-words";
-import { StartingWordDisplay } from "./starting-word-display";
 import { SubmissionProgress } from "./submission-progress";
 import { WaitingAnimation } from "./waiting-animation";
 import { WordEntry } from "./word-entry";
@@ -17,7 +17,7 @@ import type { Phase, RoomSnapshot } from "@/lib/types";
 
 /**
  * The in-match screen. Composition (mobile first):
- *   stage — starting word, or the last round's words (reveal → clue)
+ *   stage — the round-one opening prompt, or the last round's words (reveal → clue)
  *   prompt + word entry, or the waiting orbit once locked in
  *   who's ready
  */
@@ -66,19 +66,13 @@ export function GameView({
         <div className="flex min-h-[15rem] flex-1 flex-col items-center justify-center py-6">
           <AnimatePresence mode="popLayout" initial={false}>
             {stage === "start" ? (
-              <StartingWordDisplay
-                key={`start-${match.id}`}
-                word={match.startingWord}
-                participants={match.participants}
-                intro={phase === "starting"}
-              />
+              <OpeningPrompt key={`start-${match.id}`} participants={match.participants} intro={phase === "starting"} />
             ) : (
               <RoundWords
                 key={`round-${last!.number}`}
                 round={last!}
                 participants={match.participants}
                 mode={stage}
-                startingWord={match.startingWord}
                 serverNow={serverNow}
               />
             )}
@@ -108,9 +102,7 @@ export function GameView({
                 >
                   <WordEntry
                     roundNumber={round.number}
-                    prompt={
-                      round.number === 1 ? "What's the first word it brings to mind?" : "Where do your thoughts meet?"
-                    }
+                    prompt={round.number === 1 ? "Any word at all. What's yours?" : "Where do your thoughts meet?"}
                     onSubmit={(word) => onSubmit(round.number, word)}
                   />
                 </motion.div>
@@ -162,7 +154,7 @@ export function GameView({
             />
           )}
 
-          <RoundHistory rounds={match.rounds} participants={match.participants} startingWord={match.startingWord} />
+          <RoundHistory rounds={match.rounds} participants={match.participants} />
         </div>
       </LayoutGroup>
     </motion.section>

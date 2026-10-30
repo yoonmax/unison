@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useSound } from "../providers";
 import { ApiError } from "@/lib/client/api";
 import { fade, spring } from "@/lib/client/motion";
+import { sheenHandlers } from "@/lib/client/sheen";
 import { cn } from "@/lib/client/cn";
 import { WORD_MAX_LENGTH } from "@/lib/game/constants";
 import { ANSWER_ERROR_MESSAGES, normalizeAnswer } from "@/lib/game/normalize";
@@ -69,10 +70,12 @@ export function WordEntry({
       </p>
       <motion.div
         className={cn(
-          "relative flex h-[4.5rem] w-full max-w-[26rem] items-center rounded-[26px] bg-card ring-1 ring-line-strong shadow-soft",
-          "transition-shadow duration-200 focus-within:shadow-[0_0_0_6px_var(--color-lavender-tint),var(--shadow-soft)] focus-within:ring-lavender-deep/40",
-          error && "ring-peach-deep/45",
+          // Focus and error use an outline so the glass rim and shadow stay intact.
+          "glass flex h-[4.5rem] w-full max-w-[26rem] items-center rounded-[26px] outline-offset-4",
+          "transition-[outline-color] duration-200 outline-2 outline-transparent focus-within:outline-lavender-deep/30",
+          error && "outline-peach-deep/40 focus-within:outline-peach-deep/40",
         )}
+        {...sheenHandlers}
         animate={{ scale: sending ? 0.975 : 1 }}
         transition={spring.press}
       >
