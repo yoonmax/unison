@@ -2,7 +2,7 @@
 
 **Different minds. One word.**
 
-### [Play it live: unison-eight-dun.vercel.app](https://unison-eight-dun.vercel.app)
+### [Play it live: playunison.vercel.app](https://playunison.vercel.app)
 
 Create a room and send the link to 1–3 friends. No accounts, works on phones. Playing alone? Open the
 invite link in a private window; each window counts as its own player.
@@ -180,7 +180,7 @@ To test a deployed site instead of a local stack, set `E2E_BASE_URL` and run a s
 would hit production rate limits):
 
 ```bash
-E2E_BASE_URL=https://unison-eight-dun.vercel.app npx playwright test e2e/multiplayer.spec.ts
+E2E_BASE_URL=https://playunison.vercel.app npx playwright test e2e/multiplayer.spec.ts
 ```
 
 Everything at once (typecheck, lint, unit/db tests, production build):
