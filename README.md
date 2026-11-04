@@ -2,6 +2,11 @@
 
 **Different minds. One word.**
 
+### [Play it live: unison-eight-dun.vercel.app](https://unison-eight-dun.vercel.app)
+
+Create a room and send the link to 1–3 friends. No accounts, works on phones. Playing alone? Open the
+invite link in a private window; each window counts as its own player.
+
 A cooperative real-time word game for 2–4 friends. There's no given word to start from: everyone
 secretly types any word they like. The words are revealed together; then everyone tries again,
 aiming for the word they think the others will pick. You win when every player submits the
@@ -10,11 +15,11 @@ exact same word in the same round.
 - Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Motion for React
 - Postgres with all game rules in transactional SQL functions (an embedded Postgres locally, so
   there's nothing to install)
-- Server-Sent Events locally, or Supabase Realtime Broadcast when hosted, as a "something changed"
-  doorbell
+- Supabase Realtime Broadcast when hosted (Server-Sent Events locally) as a "something changed"
+  doorbell; hosted on Vercel
 - Vitest unit + database tests, Playwright multi-browser end-to-end tests
 
-## Quick start
+## Run it locally
 
 Needs Node 20.9+ (tested on Node 24). No Docker, database install or accounts required.
 
@@ -28,10 +33,6 @@ npm run dev:local
 
 Then open http://localhost:3000, create a room, and open the invite link in a private window (or a
 second browser) to play against yourself. Each window counts as its own player.
-
-This is a personal project that runs locally; it isn't hosted anywhere. The app is built to be
-deployable (see [Deploying](#deploying-optional-vercel--supabase)), and the Supabase path was
-verified end to end against a real Supabase project.
 
 ---
 
@@ -175,6 +176,13 @@ Playwright builds the app into `.next-e2e`, starts it against a fresh embedded P
 
 First run only: `npx playwright install chromium`.
 
+To test a deployed site instead of a local stack, set `E2E_BASE_URL` and run a subset (the full suite
+would hit production rate limits):
+
+```bash
+E2E_BASE_URL=https://unison-eight-dun.vercel.app npx playwright test e2e/multiplayer.spec.ts
+```
+
 Everything at once (typecheck, lint, unit/db tests, production build):
 
 ```bash
@@ -183,7 +191,7 @@ npm run check
 
 ---
 
-## Deploying (optional: Vercel + Supabase)
+## Deploying (Vercel + Supabase)
 
 1. **Create a Supabase project** (free tier is fine). In **Project → Connect** copy:
    - the **Transaction pooler** URI (port 6543) → `DATABASE_URL`
@@ -227,12 +235,18 @@ ones after ~3 hours) and are deleted a day after expiring, so storage stays tiny
 
 Everything Unison creates lives in its own `unison` schema (tables, functions, a view, and the
 `unison.schema_migrations` bookkeeping table), so it can live inside a project that already hosts
-something else without touching that project's tables.
+something else without touching that project's tables. The live site runs this way.
+
+In a shared project, give the app its own database role instead of the `postgres` login: a login
+role with `BYPASSRLS` (the tables have RLS on with no policies), `USAGE` on schema `realtime` and
+`INSERT` on `realtime.messages` for broadcasting, and temporary `CREATE` on the database while
+migrating as that role so it owns the `unison` schema. It then has no access to the other tables.
 
 To remove Unison from a shared project completely:
 
 ```sql
 drop schema unison cascade;
+drop role unison_app; -- if you created a dedicated role
 ```
 
 ### Other hosts

@@ -1,0 +1,11 @@
+# Only what the hosted app needs. Local data, secrets, tests and tooling stay home.
+.*
+e2e
+tests
+scripts
+supabase
+test-results
+playwright-report
+playwright.config.ts
+vitest.config.mts
+tsconfig.tsbuildinfo

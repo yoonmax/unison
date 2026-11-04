@@ -55,7 +55,6 @@ export function useRoomSync(code: string, initial: RoomSnapshot): RoomSync {
   const again = useRef(false);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const retryAttempt = useRef(0);
-  const hadTransportDrop = useRef(false);
 
   const serverNow = useCallback(() => Date.now() + offsetRef.current, []);
 
@@ -135,12 +134,9 @@ export function useRoomSync(code: string, initial: RoomSnapshot): RoomSync {
       },
       (status) => {
         setTransport(status);
-        if (status === "reconnecting") hadTransportDrop.current = true;
-        if (status === "live" && hadTransportDrop.current) {
-          hadTransportDrop.current = false;
-          // Catch up on anything we missed while disconnected.
-          void refreshRef.current();
-        }
+        // Catch up every time the connection goes live: anything broadcast while
+        // disconnected, or in the gap before the first subscribe, was missed.
+        if (status === "live") void refreshRef.current();
       },
     );
   }, [code, channel, sessionLost]);
