@@ -11,7 +11,10 @@ const MIGRATIONS_DIR = path.resolve(import.meta.dirname, "../../supabase/migrati
 export async function migrate(databaseUrl: string, log: (msg: string) => void = console.log) {
   const sql = postgres(databaseUrl, { max: 1, prepare: false, onnotice: () => {} });
   try {
-    await sql`create schema if not exists unison`;
+    // Only when missing: CREATE SCHEMA IF NOT EXISTS demands database-level CREATE even
+    // if the schema exists, which a least-privilege role that owns it doesn't have.
+    const [{ exists }] = await sql`select to_regnamespace('unison') is not null as exists`;
+    if (!exists) await sql`create schema unison`;
     await sql`
       create table if not exists unison.schema_migrations (
         name text primary key,
