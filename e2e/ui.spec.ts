@@ -80,6 +80,77 @@ test.describe("interaction", () => {
     await expect(a.getByText("Letters only, please.")).toHaveCount(0);
   });
 
+  test("a reused word shakes, flashes red and warns only the player who tried it", async ({ browser }) => {
+    const a = await newPlayer(browser);
+    const b = await newPlayer(browser);
+    const code = await createRoom(a, "Rae");
+    await joinViaLink(b, code, "Bo");
+    await a.getByRole("button", { name: "Start game" }).click();
+    await submitWord(a, "river");
+    await submitWord(b, "stone");
+
+    const warning = "That word's already been said. Try a new one.";
+    const inputA = a.getByLabel("Your word for round 2");
+    await expect(inputA).toBeVisible();
+    await expect(b.getByLabel("Your word for round 2")).toBeVisible();
+
+    // Your own earlier word, in any case, with the keyboard.
+    const requests: string[] = [];
+    a.on("request", (r) => {
+      if (r.url().endsWith("/submit")) requests.push(r.url());
+    });
+    await inputA.fill("River");
+    await inputA.press("Enter");
+    await expect(a.getByText(warning)).toBeVisible();
+    await expect(inputA).toHaveAttribute("data-rejected", "true");
+    await expect(inputA).toHaveCSS("color", "rgb(201, 48, 42)");
+    await expect
+      .poll(() => inputA.evaluate((el) => getComputedStyle(el.parentElement!).outlineColor), { timeout: 900 })
+      .toMatch(/color-mix|oklab|rgba\(201, 48, 42|rgb\(201, 48, 42/);
+    // The word is selected for easy retyping, and selected text paints in the selection color.
+    expect(await inputA.evaluate((el) => getComputedStyle(el, "::selection").color)).toBe("rgb(201, 48, 42)");
+    expect(await inputA.evaluate((el: HTMLInputElement) => el.value.slice(el.selectionStart!, el.selectionEnd!))).toBe(
+      "River",
+    );
+    await expect(inputA).toBeEditable();
+
+    // The red lasts about a second; the note stays until the word changes.
+    await expect(inputA).not.toHaveAttribute("data-rejected", "true", { timeout: 2500 });
+    await expect(a.getByText(warning)).toBeVisible();
+
+    // Someone else's earlier word, with the button.
+    await inputA.fill("stone");
+    await expect(a.getByText(warning)).toHaveCount(0);
+    await a.getByRole("button", { name: "Lock in your word" }).click();
+    await expect(a.getByText(warning)).toBeVisible();
+    expect(requests).toEqual([]);
+
+    // The other player sees nothing, and the attempt didn't count as an answer.
+    await expect(b.getByText(warning)).toHaveCount(0);
+    await expect(b.getByText("Rae: Thinking…")).toBeVisible();
+
+    // A refusal from the server (say, a client that missed an update) looks the same.
+    await a.route(
+      "**/submit",
+      (route) =>
+        route.fulfill({
+          status: 409,
+          contentType: "application/json",
+          body: JSON.stringify({ error: { code: "WORD_ALREADY_USED", message: warning } }),
+        }),
+      { times: 1 },
+    );
+    await inputA.fill("basalt");
+    await inputA.press("Enter");
+    await expect(a.getByText(warning)).toBeVisible();
+    await expect(inputA).toHaveAttribute("data-rejected", "true");
+    await expect(inputA).toBeEditable();
+
+    // A new word goes straight through.
+    await submitWord(a, "gravel");
+    await expect(b.getByText("Rae: Ready")).toBeVisible();
+  });
+
   test("sound can be muted and the preference sticks", async ({ browser }) => {
     const page = await newPlayer(browser);
     await createRoom(page, "Quiet");

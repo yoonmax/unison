@@ -30,6 +30,9 @@ async function main() {
   };
 
   if (!process.env.E2E_SKIP_BUILD) {
+    // Always from clean: Turbopack's persistent cache can serve CSS generated
+    // before a new Tailwind class appeared, so a test could pass or fail on stale styles.
+    await rm(".next-e2e", { recursive: true, force: true });
     const build = spawnSync("npx", ["next", "build"], { stdio: "inherit", env });
     if (build.status !== 0) throw new Error("next build failed");
   }

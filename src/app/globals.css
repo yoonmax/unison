@@ -31,6 +31,8 @@
   --color-butter-tint: #faf3da;
   --color-butter-deep: #85691a;
 
+  --color-alert: #c9302a;
+
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 

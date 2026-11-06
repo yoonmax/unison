@@ -36,6 +36,9 @@ export function isUnison(words: readonly string[], participantCount: number): bo
   return normalized.every((n) => n.ok && n.word === first);
 }
 
+/** Shown only to the player who tried it; nothing reaches the other screens. */
+export const REUSED_WORD_MESSAGE = "That word's already been said. Try a new one.";
+
 export const ANSWER_ERROR_MESSAGES: Record<AnswerError, string> = {
   empty: "Type a word first.",
   multiple_words: "Just one word for now.",

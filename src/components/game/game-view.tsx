@@ -102,7 +102,12 @@ export function GameView({
                 >
                   <WordEntry
                     roundNumber={round.number}
-                    prompt={round.number === 1 ? "Any word at all. What's yours?" : "Where do your thoughts meet?"}
+                    usedWords={match.rounds.flatMap((r) => r.answers.map((a) => a.word))}
+                    prompt={
+                      round.number === 1
+                        ? "Any word at all. What's yours?"
+                        : "Where do your thoughts meet? New words only."
+                    }
                     onSubmit={(word) => onSubmit(round.number, word)}
                   />
                 </motion.div>

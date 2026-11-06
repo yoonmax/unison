@@ -278,7 +278,8 @@ export function LobbyView({
           <p className="font-medium text-ink">How to play</p>
           <p className="mt-1">
             Everyone secretly types any word at all. Then you all see each other&rsquo;s words and try again — aiming
-            for the word you think everyone else will pick. Keep going until you all say the same thing.
+            for the word you think everyone else will pick. Each word can only be played once, so keep finding new ones
+            until you all say the same thing.
           </p>
           <p className="mt-2 text-ink">Don&rsquo;t say your word out loud. Find it together.</p>
         </div>

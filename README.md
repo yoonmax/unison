@@ -9,8 +9,8 @@ invite link in a private window; each window counts as its own player.
 
 A cooperative real-time word game for 2–4 friends. There's no given word to start from: everyone
 secretly types any word they like. The words are revealed together; then everyone tries again,
-aiming for the word they think the others will pick. You win when every player submits the
-exact same word in the same round.
+aiming for the word they think the others will pick, and no word can be played twice. You win when
+every player submits the exact same word in the same round.
 
 - Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Motion for React
 - Postgres with all game rules in transactional SQL functions (an embedded Postgres locally, so
@@ -151,7 +151,7 @@ Vitest boots a throwaway embedded Postgres, applies the migrations and runs:
 - `tests/db/rooms` — create/join, 4-player cap, invalid codes, duplicate nicknames, host-only
   start, one-player start refused, host transfer (leave and disconnect), kicking, session scoping
 - `tests/db/rounds` — round one with no given word, secrecy, single submission, reveal timing, next round
-  contents, partial vs full agreement, repeated words, stale rounds, server-side validation,
+  contents, partial vs full agreement, refused repeat words, stale rounds, server-side validation,
   ending, restart, the win-guard trigger
 - `tests/db/concurrency` — simultaneous final answers, simultaneous identical answers, duplicate
   requests, seven simultaneous joins, racing starts and restarts (real parallel transactions)

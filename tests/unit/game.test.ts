@@ -37,7 +37,7 @@ describe("clusters", () => {
   });
 
   it("describes agreement gently", () => {
-    expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "A"), a("4", "B")])).toBe("Three minds met. One to go.");
+    expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "A"), a("4", "B")])).toBe("Three minds met. So close.");
     expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B"), a("4", "B")])).toBe("Two pairs. Getting warmer.");
     expect(agreementLine([a("1", "A"), a("2", "B"), a("3", "C")])).toBe("Every mind took its own path.");
     expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B"), a("4", "C")])).toBe("Almost in sync.");
@@ -49,7 +49,7 @@ describe("clusters", () => {
       "Three starting points. Now find the middle.",
     );
     expect(agreementLine([a("1", "A"), a("2", "B")], 1)).toBe("Two starting points. Now find the middle.");
-    expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B")], 1)).toBe("Two minds met. One to go.");
+    expect(agreementLine([a("1", "A"), a("2", "A"), a("3", "B")], 1)).toBe("Two minds met. So close.");
   });
 });
 

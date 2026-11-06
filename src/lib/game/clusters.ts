@@ -37,7 +37,8 @@ export function agreementLine(answers: readonly RevealedAnswer[], roundNumber = 
   if (total === 4 && pairs === 2) return "Two pairs. Getting warmer.";
   const remaining = total - biggest;
   if (remaining === 1) {
-    return `${NUMBER_WORDS[biggest]} minds met. One to go.`;
+    // Not "one to go": the word they met on is used up, so everyone moves on.
+    return `${NUMBER_WORDS[biggest]} minds met. So close.`;
   }
   return "Almost in sync.";
 }

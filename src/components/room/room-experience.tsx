@@ -140,7 +140,9 @@ function RoomInner({
       }
       if (phase === "collecting" && round) {
         announce(
-          round.number === 1 ? "Round 1. Type any word." : `Round ${round.number}. Where do your thoughts meet?`,
+          round.number === 1
+            ? "Round 1. Type any word."
+            : `Round ${round.number}. Where do your thoughts meet? New words only.`,
         );
       }
       if (phase === "won" && match) {

@@ -71,7 +71,7 @@ describe("rounds", () => {
 
   it("treats partial agreement as another round and full agreement as a win", async () => {
     const room = await startedRoom(4);
-    for (const [i, word] of ["APPLE", "APPLE", "APPLE", "BANANA"].entries()) {
+    for (const [i, word] of ["PEAR", "PEAR", "PEAR", "BANANA"].entries()) {
       await submitAnswer(room.code, room.players[i].token, 1, word);
     }
     let snap = await snapshotOf(room, 0);
@@ -97,19 +97,54 @@ describe("rounds", () => {
     expect((await snapshotOf(room, 0)).match!.status).toBe("active");
   });
 
-  it("allows repeating earlier words, your own or someone else's", async () => {
+  it("refuses any word already revealed this match, your own or someone else's", async () => {
     const room = await startedRoom(2);
     await submitAnswer(room.code, room.players[0].token, 1, "ECHO");
     await submitAnswer(room.code, room.players[1].token, 1, "RIDGE");
     await openCurrentRound(room.code);
-    await submitAnswer(room.code, room.players[0].token, 2, "ECHO");
-    await submitAnswer(room.code, room.players[1].token, 2, "PINE");
+    await expectGameError(submitAnswer(room.code, room.players[0].token, 2, "echo"), "WORD_ALREADY_USED");
+    await expectGameError(submitAnswer(room.code, room.players[0].token, 2, "Ridge"), "WORD_ALREADY_USED");
+    await submitAnswer(room.code, room.players[0].token, 2, "PINE");
+    await submitAnswer(room.code, room.players[1].token, 2, "CEDAR");
     await openCurrentRound(room.code);
-    await submitAnswer(room.code, room.players[0].token, 3, "RIDGE");
-    await submitAnswer(room.code, room.players[1].token, 3, "RIDGE");
+    // Two rounds back counts too.
+    await expectGameError(submitAnswer(room.code, room.players[1].token, 3, "ECHO"), "WORD_ALREADY_USED");
+    await submitAnswer(room.code, room.players[0].token, 3, "FOREST");
+    await submitAnswer(room.code, room.players[1].token, 3, "FOREST");
     const snap = await snapshotOf(room, 0);
-    expect(snap.match).toMatchObject({ status: "won", finalWord: "RIDGE" });
+    expect(snap.match).toMatchObject({ status: "won", finalWord: "FOREST" });
     expect(snap.match!.rounds.map((r) => r.number)).toEqual([1, 2, 3]);
+  });
+
+  it("keeps a refused word private: nothing stored, nothing announced", async () => {
+    const room = await startedRoom(2);
+    await submitAnswer(room.code, room.players[0].token, 1, "ECHO");
+    await submitAnswer(room.code, room.players[1].token, 1, "RIDGE");
+    await openCurrentRound(room.code);
+    const before = await snapshotOf(room, 1);
+    await expectGameError(submitAnswer(room.code, room.players[0].token, 2, "RIDGE"), "WORD_ALREADY_USED");
+    const after = await snapshotOf(room, 1);
+    expect(after.version).toBe(before.version);
+    expect(after.notice).toEqual(before.notice);
+    expect(after.match!.currentRound.submittedPlayerIds).toEqual([]);
+    expect((await snapshotOf(room, 0)).match!.currentRound.mySubmission).toBeNull();
+  });
+
+  it("only counts revealed rounds: a word locked in this round can't be refused or leak", async () => {
+    const room = await startedRoom(3);
+    await submitAnswer(room.code, room.players[0].token, 1, "SAME");
+    // Matching a word someone has locked but not revealed is how you win.
+    const second = await submitAnswer(room.code, room.players[1].token, 1, "SAME");
+    expect(second).toMatchObject({ status: "accepted", word: "SAME" });
+  });
+
+  it("starts each match with a clean slate of words", async () => {
+    const room = await startedRoom(2);
+    await submitAnswer(room.code, room.players[0].token, 1, "AGAIN");
+    await submitAnswer(room.code, room.players[1].token, 1, "AGAIN");
+    await startMatch(room.code, room.players[0].token);
+    await openCurrentRound(room.code);
+    expect(await submitAnswer(room.code, room.players[0].token, 1, "AGAIN")).toMatchObject({ status: "accepted" });
   });
 
   it("rejects answers for a previous round and before a round opens", async () => {

@@ -2,7 +2,7 @@
 // autoplay: the AudioContext is only created after a user gesture, and every
 // call is a silent no-op if audio is unavailable.
 
-export type SoundName = "tick" | "pop" | "ready" | "reveal" | "victory" | "join";
+export type SoundName = "tick" | "pop" | "ready" | "reveal" | "victory" | "join" | "reject";
 
 const STORAGE_KEY = "unison:sound";
 
@@ -63,6 +63,9 @@ export class SoundEngine {
       switch (name) {
         case "tick":
           this.tone({ freq: 1320, start: t, dur: 0.035, gain: 0.08, type: "sine" });
+          break;
+        case "reject":
+          this.tone({ freq: 233, to: 165, start: t, dur: 0.2, gain: 0.2, type: "triangle" });
           break;
         case "pop":
           this.tone({ freq: 660, to: 330, start: t, dur: 0.14, gain: 0.35, type: "sine" });

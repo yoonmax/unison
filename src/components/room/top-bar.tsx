@@ -108,7 +108,7 @@ export function TopBar({
               aria-live="polite"
             >
               <span className="font-medium text-ink">Round {round}</span>
-              <span className="text-ink-faint">
+              <span className="hidden text-ink-faint min-[360px]:inline">
                 <Elapsed startedAt={startedAt} serverNow={serverNow} frozenAt={completedAt} />
               </span>
             </p>

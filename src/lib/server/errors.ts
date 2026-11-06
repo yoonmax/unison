@@ -1,4 +1,5 @@
 import "server-only";
+import { REUSED_WORD_MESSAGE } from "../game/normalize";
 
 const ERRORS = {
   BAD_REQUEST: [400, "That request didn't look right."],
@@ -21,6 +22,7 @@ const ERRORS = {
   NO_ACTIVE_MATCH: [409, "There's no game in progress."],
   STALE_ROUND: [409, "That round already moved on."],
   ROUND_CLOSED: [409, "That round already closed."],
+  WORD_ALREADY_USED: [409, REUSED_WORD_MESSAGE],
   ROUND_NOT_OPEN: [409, "Hold that thought — the round hasn't opened yet."],
   RATE_LIMITED: [429, "Easy there — take a breath and try again in a moment."],
   INTERNAL: [500, "Something went sideways. Please try again."],
